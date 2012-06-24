@@ -15,11 +15,13 @@
  */
 package com.logpig.mweagle.rolling;
 
-import java.util.ArrayList;
-
 import ch.qos.logback.core.rolling.RollingFileAppender;
-
 import com.amazonaws.services.s3.model.Region;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.model.PublishRequest;
+
+import java.util.ArrayList;
 
 /**
  * Logback compatible rolling logfile appender that supports the additional logback.xml properties for S3 configuration:
@@ -132,6 +134,18 @@ public class S3RollingFileAppender<E> extends RollingFileAppender<E>
 
 	private void writeErrorMessage(String message)
 	{
-		System.err.println("[ERROR] S3RollingFileAppender - " + message);
+        final String __subject = "[ERROR] S3RollingFileAppender";
+		System.err.println(String.format("%s - %s", __subject, message));
+        try {
+            final AmazonSNS snsClient = new AmazonSNSClient(s3Settings.getAWSCredentials());
+            final PublishRequest __request = new PublishRequest()
+                    .withTopicArn(s3Settings.getSnsTopicArn())
+                    .withMessage(message)
+                    .withSubject(__subject);
+            snsClient.publish(__request);
+        } catch (Exception e) {
+            System.err.println(String.format("[ERROR] Unable to send notification of S3RollingFileAppender failure. %s",
+                    e.getMessage()));
+        }
 	}
 }

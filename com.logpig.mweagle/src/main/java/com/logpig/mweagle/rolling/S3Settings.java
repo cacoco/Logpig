@@ -15,10 +15,10 @@
  */
 package com.logpig.mweagle.rolling;
 
-import java.util.ArrayList;
-
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.model.Region;
+
+import java.util.ArrayList;
 /**
  * POJO to store Amazon S3 settings 
  *
@@ -39,18 +39,25 @@ public class S3Settings {
 
 	public boolean mockPut = false;
 
+    public String snsTopicArn;
+
 	public int retryCount = S3Settings.DEFAULT_RETRY_COUNT;
 
 	public BasicAWSCredentials getAWSCredentials() {
 		return new BasicAWSCredentials(accessKey, secretKey);
 	}
 
-	public ArrayList<String> getPostSettingsErrors() {
+    public String getSnsTopicArn() {
+        return snsTopicArn;
+    }
+
+    public ArrayList<String> getPostSettingsErrors() {
 		ArrayList<String>	errors = new ArrayList<String>();
 		
 		getSettingError("accessKey", accessKey, errors);
 		getSettingError("secretKey", secretKey, errors);
 		getSettingError("bucketName", bucketName, errors);
+        getSettingError("snsTopicArn", snsTopicArn, errors);
 		getBucketNameErrors(errors);
 		getRetryValueErrors(errors);
 		return errors;
